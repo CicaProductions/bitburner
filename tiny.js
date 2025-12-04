@@ -67,8 +67,8 @@ export async function main(ns) {
 			ns.print('Starting batch #' + batchCount);
 			const tempPids = [];
 			try {
-				tempPids.push(...RunScript(ns, 'tinyhack.js', target, ns.weakenTime(target) - ns.getHackTime(target);
-				tempPids.push(...RunScript(ns, 'tinygrow.js', target, ns.weakenTime(target) - ns.getGrowTime(target);
+				tempPids.push(...RunScript(ns, 'tinyhack.js', target, ns.weakenTime(target) - ns.getHackTime(target)));
+				tempPids.push(...RunScript(ns, 'tinygrow.js', target, ns.weakenTime(target) - ns.getGrowTime(target)));
 				tempPids.push(...RunScript(ns, 'tinyweaken.js', target, 0, wThreads));
 			}
 			catch {
@@ -122,6 +122,7 @@ function IsPrepped(ns, target) {
 }
 
 // Preps a server using a batch (if possible, otherwise sequential)
+/** param {NS} ns */
 async function BatchPrep(ns, server) {
 	ns.print('WARN: Prepping ' + server);
 	ns.print('WARN: Security is ' + ns.getServer(server).hackDifficulty + ' min: ' + ns.getServer(server).minDifficulty);
@@ -145,7 +146,7 @@ async function BatchPrep(ns, server) {
 		}
 		if (gthreads > 0) {
 			ns.print('INFO: Funds are not maxed, starting ' + gthreads + ' threads to grow them');
-			const pids = RunScript(ns, 'tinygrow.js', server, ns.getHackTime(server.hostname)
+			const pids = RunScript(ns, 'tinygrow.js', server, ns.getHackTime(so.hostname));
 			allPids.push(...pids);
 		}
 		if (w2threads > 0) {
