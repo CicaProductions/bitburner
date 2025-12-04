@@ -24,7 +24,7 @@ export async function main(ns) {
 		// Prep the server (we want it at minimum security and maximum money)
 		if (!IsPrepped(ns, target)) await BatchPrep(ns, target);
 
-		// Initialize server and player for Formulas.exe functions
+		// Code useless, leaving cuz lazy
 		let player = ns.getPlayer();
 		let so = ns.getServer(target);
 
@@ -33,7 +33,7 @@ export async function main(ns) {
 		so.moneyAvailable = so.moneyMax;
 
 		// hack calculations
-		const hackPctThread = ns.formulas.hacking.hackPercent(so, player);
+		const hackPctThread = ns.hackAnalyze(target);
 		const hThreads = Math.floor(pct / hackPctThread);
 		const effectivePct = hackPctThread * hThreads;
 		const batchMoney = so.moneyAvailable * effectivePct;
@@ -42,7 +42,7 @@ export async function main(ns) {
 		// grow calculations
 		so.moneyAvailable -= batchMoney;
 		so.hackDifficulty += hThreads * 0.002;
-		const gThreads = ns.formulas.hacking.growThreads(so, player, so.moneyMax);
+		const gThreads = ns.growthAnalyze(server, ns.getServerMaxMoney(server)/ns.getServerMoneyAvailable(server));
 		const growRam = ns.getScriptRam('tinygrow.js');
 
 		// weaken calculations
@@ -67,8 +67,8 @@ export async function main(ns) {
 			ns.print('Starting batch #' + batchCount);
 			const tempPids = [];
 			try {
-				tempPids.push(...RunScript(ns, 'tinyhack.js', target, ns.formulas.hacking.weakenTime(so, player) - ns.formulas.hacking.hackTime(so, player), hThreads));
-				tempPids.push(...RunScript(ns, 'tinygrow.js', target, ns.formulas.hacking.weakenTime(so, player) - ns.formulas.hacking.growTime(so, player), gThreads));
+				tempPids.push(...RunScript(ns, 'tinyhack.js', target, ns.weakenTime(target) - ns.getHackTime(target)));
+				tempPids.push(...RunScript(ns, 'tinygrow.js', target, ns.weakenTime(target) - ns.getGrowTime(target)));
 				tempPids.push(...RunScript(ns, 'tinyweaken.js', target, 0, wThreads));
 			}
 			catch {
@@ -122,6 +122,7 @@ function IsPrepped(ns, target) {
 }
 
 // Preps a server using a batch (if possible, otherwise sequential)
+/** param {NS} ns */
 async function BatchPrep(ns, server) {
 	ns.print('WARN: Prepping ' + server);
 	ns.print('WARN: Security is ' + ns.getServer(server).hackDifficulty + ' min: ' + ns.getServer(server).minDifficulty);
@@ -134,7 +135,7 @@ async function BatchPrep(ns, server) {
 		let sec = so.hackDifficulty - so.minDifficulty;
 
 		let w1threads = Math.ceil(sec / 0.05);
-		let gthreads = ns.formulas.hacking.growThreads(so, player, so.moneyMax);
+		let gthreads = ns.growthAnalyze(server, ns.getServerMaxMoney(server)/ns.getServerMoneyAvailable(server));
 		let w2threads = Math.ceil((gthreads * 0.004) / 0.05);
 
 		const allPids = [];
@@ -145,7 +146,7 @@ async function BatchPrep(ns, server) {
 		}
 		if (gthreads > 0) {
 			ns.print('INFO: Funds are not maxed, starting ' + gthreads + ' threads to grow them');
-			const pids = RunScript(ns, 'tinygrow.js', server, ns.formulas.hacking.hackTime(so, ns.getPlayer()) * 0.8, gthreads, true);
+			const pids = RunScript(ns, 'tinygrow.js', server, ns.getHackTime(so.hostname));
 			allPids.push(...pids);
 		}
 		if (w2threads > 0) {
